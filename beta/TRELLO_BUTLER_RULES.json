@@ -1,0 +1,51 @@
+{
+  "rules": [
+    {
+      "name": "Auto-label Crash bugs",
+      "trigger": "Card created",
+      "condition": "Description contains 'Severity: Crash'",
+      "action": "Add labels: '🔴 Crash', 'Priority-Critical'"
+    },
+    {
+      "name": "Auto-label Blocker bugs",
+      "trigger": "Card created",
+      "condition": "Description contains 'Severity: Blocker'",
+      "action": "Add labels: '🟠 Blocker', 'Priority-High'"
+    },
+    {
+      "name": "Auto-label Major bugs",
+      "trigger": "Card created",
+      "condition": "Description contains 'Severity: Major'",
+      "action": "Add labels: '🟡 Major', 'Priority-Medium'"
+    },
+    {
+      "name": "Auto-label Minor bugs",
+      "trigger": "Card created",
+      "condition": "Description contains 'Severity: Minor'",
+      "action": "Add labels: '🟢 Minor', 'Priority-Low'"
+    },
+    {
+      "name": "Auto-label UX bugs",
+      "trigger": "Card created",
+      "condition": "Description contains 'Severity: UX'",
+      "action": "Add labels: '💙 UX', 'Priority-Low'"
+    },
+    {
+      "name": "Critical bug escalation",
+      "trigger": "Label added",
+      "condition": "Label is '🔴 Crash' OR 'Priority-Critical'",
+      "action": "Add comment: '@CJ CRITICAL BUG - {Card Name}'",
+      "also": "Move card to 'In Progress'"
+    },
+    {
+      "name": "Auto-move on assignment",
+      "trigger": "Card assigned",
+      "action": "Move to 'In Progress' list"
+    },
+    {
+      "name": "Auto-add Beta label",
+      "trigger": "Card created",
+      "action": "Add label 'Beta'"
+    }
+  ]
+}
