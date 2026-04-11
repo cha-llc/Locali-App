@@ -8,6 +8,7 @@ import SearchScreen from '@/screens/search/SearchScreen';
 import BookingsScreen from '@/screens/bookings/BookingsScreen';
 import MessagesScreen from '@/screens/messages/MessagesScreen';
 import ProfileScreen from '@/screens/profile/ProfileScreen';
+import BookingStack from './BookingStack';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -21,7 +22,7 @@ function HomeTabs() {
           let iconName = '';
 
           if (route.name === 'Home') iconName = 'home';
-          else if (route.name === 'Search') iconName = 'magnify';
+          else if (route.name === 'NewBooking') iconName = 'magnify';
           else if (route.name === 'Bookings') iconName = 'calendar';
           else if (route.name === 'Messages') iconName = 'message';
           else if (route.name === 'Profile') iconName = 'account';
@@ -33,7 +34,13 @@ function HomeTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Search" component={SearchScreen} />
+      <Tab.Screen
+        name="NewBooking"
+        component={BookingStack}
+        options={{
+          tabBarLabel: 'Book',
+        }}
+      />
       <Tab.Screen name="Bookings" component={BookingsScreen} />
       <Tab.Screen name="Messages" component={MessagesScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
