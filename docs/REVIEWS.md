@@ -1,4 +1,4 @@
-# ⭐ Card #15: Reviews & Ratings (Post-Booking Feedback)
+# ⭐ Card #16: Ratings & Reviews System (Booking-Linked, Provider Scoring)
 
 **Status:** ✅ Complete  
 **Platform:** Android (React Native / Expo)  
@@ -8,45 +8,42 @@
 
 ## 📋 Overview
 
-Card #15 implements the complete review and rating system:
-- Post-booking review submission (1-5 stars)
-- Real-time rating calculations
-- Review moderation (flagging)
-- Provider profile with rating breakdown
-- Real-time review subscriptions
+Card #16 implements a real ratings and reviews system:
+- Reviews only for completed bookings
+- Automatic provider rating calculation
+- Booking eligibility enforcement
+- Read-only review display
+- Security rules for trust and transparency
 
 ---
 
-## 🎬 Review Flow
+## 🎬 Review Lifecycle
 
 ```
 Booking Completed
     ↓
-User navigates to reviews
+User navigates to "Leave Review"
     ↓
-SubmitReviewScreen opens
-    ├── Select 1-5 star rating
-    ├── Add comment (required)
-    └── Submit review
+checkEligibility()
+├── User owns booking? ✓
+├── Booking completed? ✓
+└── Not already reviewed? ✓
     ↓
-submitReview() validates
-    ├── Check rating 1-5
-    ├── Check comment not empty
-    ├── Check booking is completed
-    └── Check no duplicate review
+User selects rating + comment
     ↓
-Review stored in Supabase
+submitReview()
+├── Validate rating (1-5)
+├── Check eligibility again
+├── Insert review record
+└── updateProviderRating()
     ↓
-updateProviderRating() calculates
-    ├── Average rating (1 decimal)
-    ├── Total review count
-    └── Updates providers table
+Provider rating recalculated
+├── Get all provider's reviews
+├── Average rating
+└── Update provider document
     ↓
-ProviderProfileScreen displays
-    ├── Overall rating
-    ├── Review count
-    ├── Rating breakdown (1-5)
-    └── All reviews (recent first)
+Review visible to all users
+Provider profile updated instantly
 ```
 
 ---
@@ -57,241 +54,229 @@ ProviderProfileScreen displays
 
 ```sql
 CREATE TABLE reviews (
-  id UUID PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID NOT NULL UNIQUE REFERENCES bookings(id),
   user_id UUID NOT NULL REFERENCES users(id),
   provider_id UUID NOT NULL REFERENCES providers(id),
-  rating INTEGER NOT NULL (1-5),
-  comment TEXT NOT NULL,
-  is_flagged BOOLEAN DEFAULT FALSE,
-  flag_reason VARCHAR(255),
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
+  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
 
-### Updated Providers Table
+**Key Fields:**
+- `booking_id` – Link to booking (UNIQUE prevents duplicate reviews)
+- `rating` – 1-5 stars (required)
+- `comment` – Optional feedback
+- `created_at` – For sorting
+
+### Indexes
 
 ```sql
-ALTER TABLE providers ADD:
+CREATE INDEX idx_reviews_by_provider ON reviews(provider_id, created_at DESC);
+CREATE INDEX idx_reviews_by_user ON reviews(user_id, created_at DESC);
+CREATE INDEX idx_reviews_by_booking ON reviews(booking_id);
+```
+
+### Providers Table (Updated)
+
+```sql
+ALTER TABLE providers ADD COLUMN IF NOT EXISTS (
   rating_avg DECIMAL(2,1) DEFAULT 0,
-  total_reviews INTEGER DEFAULT 0
+  total_reviews INT DEFAULT 0,
+  updated_at TIMESTAMP WITH TIME ZONE
+);
 ```
 
 ---
 
 ## 🔐 Security (RLS Policies)
 
-**Reviews Table:**
-
 ```sql
--- Public can read non-flagged reviews
-CREATE POLICY "Public can read non-flagged reviews" ON reviews
-  FOR SELECT USING (is_flagged = FALSE);
+-- Users can create reviews for their own completed bookings
+CREATE POLICY "Users can create reviews for own bookings" ON reviews
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id AND
+    EXISTS (
+      SELECT 1 FROM bookings
+      WHERE id = booking_id
+      AND user_id = auth.uid()
+      AND status = 'completed'
+    ) AND
+    NOT EXISTS (
+      SELECT 1 FROM reviews
+      WHERE booking_id = booking_id
+    )
+  );
 
--- Users can read their own reviews
-CREATE POLICY "Users can read own reviews" ON reviews
-  FOR SELECT USING (auth.uid() = user_id);
+-- Anyone can read reviews
+CREATE POLICY "Reviews are publicly readable" ON reviews
+  FOR SELECT USING (TRUE);
 
--- Providers can read reviews for their bookings
-CREATE POLICY "Providers can read reviews for their bookings" ON reviews
-  FOR SELECT USING (auth.uid() = provider_id);
+-- No updates allowed (immutable)
+CREATE POLICY "Reviews cannot be updated" ON reviews
+  FOR UPDATE WITH CHECK (FALSE);
 
--- Users can create reviews for completed bookings
-CREATE POLICY "Users can create reviews for completed bookings" ON reviews
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- No deletes allowed (immutable)
+CREATE POLICY "Reviews cannot be deleted" ON reviews
+  FOR DELETE WITH CHECK (FALSE);
 ```
+
+**Enforces:**
+- Users can only review their own bookings
+- Bookings must be completed
+- One review per booking only
+- Reviews are immutable (no edit/delete)
+- Reviews are public (trust transparency)
 
 ---
 
 ## 📱 API Reference
 
-### submitReview()
+### canReviewBooking()
 
-**Purpose:** Submit a review for a completed booking
+**Check if user can review a booking**
 
 ```typescript
-async function submitReview(
-  bookingId: string,
+async function canReviewBooking(
   userId: string,
-  providerId: string,
-  rating: number,
-  comment: string
-): Promise<Review | null>
+  bookingId: string
+): Promise<{ canReview: boolean; reason?: string }>
 ```
 
 **Validation:**
-- Rating must be 1-5
-- Comment must not be empty
-- Booking must be completed
-- No duplicate review per booking
+- User is booking owner
+- Booking status = 'completed'
+- Review doesn't already exist
+
+**Returns:**
+```json
+{
+  "canReview": true
+  // OR
+  "canReview": false,
+  "reason": "Booking must be completed"
+}
+```
+
+---
+
+### submitReview()
+
+**Submit a rating and review for a booking**
+
+```typescript
+async function submitReview(
+  userId: string,
+  bookingId: string,
+  rating: number,
+  comment?: string
+): Promise<Review | null>
+```
+
+**Logic:**
+1. Validate rating (1-5)
+2. Check eligibility (canReviewBooking)
+3. Get provider ID from booking
+4. Create review record
+5. Call updateProviderRating()
+
+**Returns:** Review document
+
+---
+
+### updateProviderRating()
+
+**Recalculate provider's average rating**
+
+```typescript
+async function updateProviderRating(providerId: string): Promise<void>
+```
+
+**Logic:**
+1. Get all reviews for provider
+2. Calculate average: `sum / count`
+3. Update provider document:
+   - `rating_avg` – Rounded to 1 decimal
+   - `total_reviews` – Count of reviews
+   - `updated_at` – Current timestamp
 
 **Example:**
-```typescript
-await submitReview(
-  'booking-123',
-  'user-456',
-  'provider-789',
-  5,
-  'Great service, very professional!'
-);
+```
+Reviews: [5, 4, 5] = 14 / 3 = 4.67 → 4.7
 ```
 
 ---
 
 ### getProviderReviews()
 
-**Purpose:** Get all reviews for a provider
+**Get all reviews for a provider**
 
 ```typescript
 async function getProviderReviews(providerId: string): Promise<Review[]>
 ```
 
-**Returns:** Array of reviews (non-flagged only), sorted by newest first
+**Returns:** Reviews ordered by creation date (newest first)
 
 ---
 
-### getProviderAverageRating()
+### getUserReviews()
 
-**Purpose:** Calculate average rating for a provider
+**Get reviews a user has left**
 
 ```typescript
-async function getProviderAverageRating(providerId: string): Promise<number>
+async function getUserReviews(userId: string): Promise<Review[]>
 ```
 
-**Returns:** Number 0-5, rounded to 1 decimal (e.g., 4.7)
+**Returns:** User's reviews (newest first)
 
 ---
 
-### getProviderReviewCount()
+### getReviewByBooking()
 
-**Purpose:** Get total review count for a provider
+**Get review for a specific booking (if exists)**
 
 ```typescript
-async function getProviderReviewCount(providerId: string): Promise<number>
+async function getReviewByBooking(bookingId: string): Promise<Review | null>
 ```
 
 ---
 
-### getProviderRatingDistribution()
+### getProviderRating()
 
-**Purpose:** Get breakdown of ratings (1-5 stars)
+**Get provider's average rating and review count**
 
 ```typescript
-async function getProviderRatingDistribution(
-  providerId: string
-): Promise<Record<number, number>>
-```
-
-**Returns:**
-```json
-{
-  "1": 2,
-  "2": 1,
-  "3": 5,
-  "4": 10,
-  "5": 20
-}
+async function getProviderRating(providerId: string): Promise<{
+  rating: number;
+  count: number;
+} | null>
 ```
 
 ---
 
-### updateProviderRating()
+## 📱 UI Components
 
-**Purpose:** Recalculate and update provider rating (called after new review)
+### ReviewSubmissionScreen
 
-```typescript
-async function updateProviderRating(providerId: string): Promise<void>
-```
-
-**Updates:**
-- `rating_avg` – Average of all reviews
-- `total_reviews` – Count of all reviews
-
----
-
-### flagReview()
-
-**Purpose:** Flag review for moderation
-
-```typescript
-async function flagReview(reviewId: string, reason: string): Promise<void>
-```
-
-**Reasons:**
-- "inappropriate content"
-- "suspicious rating"
-- "off-topic"
-- "spam"
-
----
-
-### deleteReview()
-
-**Purpose:** Delete review (admin only)
-
-```typescript
-async function deleteReview(reviewId: string, providerId: string): Promise<void>
-```
-
-**Side Effects:**
-- Updates provider rating
-
----
-
-### subscribeToProviderReviews()
-
-**Purpose:** Real-time listener for new reviews
-
-```typescript
-function subscribeToProviderReviews(
-  providerId: string,
-  onNewReview: (review: Review) => void
-): Subscription
-```
-
----
-
-## 🎨 UI Components
-
-### SubmitReviewScreen
-
-**Location:** `SubmitReviewScreen.tsx`
+**Location:** `ReviewSubmissionScreen.tsx`
 
 **Features:**
-- 1-5 star selector (visual feedback)
-- Star labels: 😞 Poor, 😐 Fair, 😊 Good, 😄 Great, 🤩 Excellent
-- Comment text area (required)
-- 500 character limit
-- Submit button (disabled until valid)
-- Error handling
+- Star rating selector (1-5)
+- Dynamic rating feedback ("Poor", "Good", etc.)
+- Optional comment field (500 char limit)
+- Review guidelines box
+- Eligibility checking
+- Duplicate prevention (shows existing review)
 
-**Example:**
-```
-┌──────────────────────────┐
-│ Rate Your Experience (←) │
-├──────────────────────────┤
-│ Service by                │
-│ Verified Provider         │
-│ April 10, 2026            │
-├──────────────────────────┤
-│ How would you rate?       │
-│ ★ ★ ★ ★ ★                │
-│ 5 out of 5 - Excellent   │
-├──────────────────────────┤
-│ Share your feedback       │
-│ [Comment text area...]    │
-│ 45 / 500 characters       │
-├──────────────────────────┤
-│ Why leave a review?       │
-│ ✓ Help customers decide   │
-│ ✓ Help providers improve  │
-│ ✓ Build community trust   │
-├──────────────────────────┤
-│ [Submit Review]           │
-│ Your review is public     │
-└──────────────────────────┘
-```
+**Flow:**
+1. User taps "Review" button
+2. App checks eligibility
+3. If already reviewed → Show existing review (read-only)
+4. If cannot review → Show reason why
+5. If eligible → Show form
+6. User selects rating + comment
+7. Submit creates review + updates rating
 
 ---
 
@@ -300,129 +285,148 @@ function subscribeToProviderReviews(
 **Location:** `ProviderProfileScreen.tsx`
 
 **Features:**
-- Provider name + verified badge
-- Overall rating (large, visual)
+- Provider name header
+- Rating display (large number + stars)
 - Review count
-- Rating breakdown (5-star bars)
-- List of reviews (recent first)
-- Each review shows: rating, date, comment
+- List of all reviews
+- Each review shows:
+  - Star rating
+  - Date submitted
+  - Comment (if any)
 - Empty state if no reviews
 
-**Example:**
-```
-┌──────────────────────────┐
-│ Provider Profile    (←)  │
-├──────────────────────────┤
-│ Verified Provider         │
-│ ✓ Verified                │
-├──────────────────────────┤
-│ 4.7                       │
-│ out of 5                  │
-│ ★ ★ ★ ★ ★                │
-│                           │
-│ Based on 38 reviews       │
-├──────────────────────────┤
-│ Rating Breakdown          │
-│ 5★ ████████████ 20        │
-│ 4★ ██████ 10              │
-│ 3★ ███ 5                  │
-│ 2★ ░ 1                    │
-│ 1★ ░ 2                    │
-├──────────────────────────┤
-│ Customer Reviews (38)      │
-│                           │
-│ ★ ★ ★ ★ ★                │
-│ Apr 8, 2026               │
-│ Great service, very fast! │
-│                           │
-│ ★ ★ ★ ★ ☆                │
-│ Apr 5, 2026               │
-│ Good, but arrived late    │
-└──────────────────────────┘
-```
-
 ---
 
-## 📊 Rating Calculations
+## 📊 Data Flow
 
-### Average Rating Formula
-
-```
-Average = Sum(all ratings) / Count(ratings)
-Rounded to 1 decimal place
-```
-
-**Example:**
-- Ratings: [5, 5, 4, 4, 4, 3, 3, 5]
-- Sum: 33
-- Count: 8
-- Average: 33 / 8 = 4.125
-- Rounded: 4.1
-
----
-
-### Rating Distribution
-
-Shows count of each rating (1-5 stars):
+### Review Document
 
 ```json
 {
-  "5": 20,  // 20 five-star ratings
-  "4": 10,
-  "3": 5,
-  "2": 1,
-  "1": 2
+  "id": "77777777-...",
+  "booking_id": "33333333-...",
+  "user_id": "11111111-...",
+  "provider_id": "22222222-...",
+  "rating": 5,
+  "comment": "Excellent service! Would book again.",
+  "created_at": "2026-04-12T16:45:30Z"
+}
+```
+
+### Provider Rating Update
+
+```json
+{
+  "id": "22222222-...",
+  "rating_avg": 4.7,
+  "total_reviews": 3,
+  "updated_at": "2026-04-12T16:45:30Z"
 }
 ```
 
 ---
 
-## ✅ Mandatory Features (Complete)
+## ✅ Mandatory Features (MVP)
 
-✅ Post-booking review submission  
-✅ 1-5 star rating system  
-✅ Comment required (non-empty)  
-✅ Real-time calculation of average rating  
-✅ Review count tracking  
-✅ Rating breakdown display  
-✅ Provider profile with reviews  
-✅ Review moderation (flagging)  
-✅ RLS policies for privacy  
-✅ No duplicate reviews per booking  
-✅ Real-time subscriptions  
+✅ **Review Eligibility**
+- Check booking ownership
+- Check completion status
+- Prevent duplicate reviews
+- Clear error messages
+
+✅ **Review Submission**
+- Star rating (required, 1-5)
+- Optional comment
+- Real Firestore write
+- One submission per booking
+
+✅ **Rating Calculation**
+- Automatic on new review
+- Average rating stored
+- Review count tracked
+- Provider document updated
+
+✅ **Read-Only Display**
+- Reviews visible to all
+- Provider profile shows average
+- Reviews immutable (no edit/delete)
+- Public trust transparency
+
+✅ **Security Enforcement**
+- RLS blocks invalid writes
+- Users can only review own bookings
+- Completed bookings only
+- No duplicate reviews
 
 ---
 
 ## 🧪 Testing Checklist
 
-- [ ] Submit review with valid rating + comment
-- [ ] Try to submit without rating → error
-- [ ] Try to submit empty comment → error
-- [ ] Try to review non-completed booking → error
-- [ ] Try to submit 2 reviews per booking → error
-- [ ] Provider rating updates after review
-- [ ] Review count increments
-- [ ] Rating breakdown shows correct distribution
-- [ ] Reviews appear on provider profile
-- [ ] Flag review for moderation
-- [ ] Delete flagged review
-- [ ] Provider rating recalculates on delete
+- [ ] Create booking
+- [ ] Mark booking completed
+- [ ] User can access review screen
+- [ ] User cannot review twice
+- [ ] Rating selection changes UI
+- [ ] Comment optional (can submit with rating only)
+- [ ] Review created in Firestore
+- [ ] Provider rating recalculated
+- [ ] Existing review shows as read-only
+- [ ] Provider profile displays correct rating
+- [ ] Review count matches
+- [ ] Try to review incomplete booking → Blocked
+- [ ] Try to review someone else's booking → Blocked
+- [ ] Rules simulator blocks invalid writes
 
 ---
 
-## 📅 MVP Limitations (Phase 2)
+## 📂 File Structure
 
-| Feature | Status | Phase |
-|---------|--------|-------|
-| Submit review | ✅ Complete | 1 |
-| Rating calculation | ✅ Complete | 1 |
-| Provider profile | ✅ Complete | 1 |
-| **Flag for moderation** | ✅ Complete | 1 |
-| **Webhook notifications** | ⏳ Planned | 2 |
-| **Admin moderation UI** | ⏳ Planned | 2 |
-| **Auto-removal rules** | ⏳ Planned | 2 |
-| **Review responses** | ⏳ Planned | 2 |
-| **Helpful votes** | ⏳ Planned | 2 |
+```
+app/lib/
+└── reviews.ts (all backend logic)
+
+app/screens/booking/
+└── ReviewSubmissionScreen.tsx (review form)
+
+app/screens/provider/
+└── ProviderProfileScreen.tsx (reviews list + rating)
+
+supabase/migrations/
+└── 001_initial_schema.sql (reviews table)
+```
+
+---
+
+## ⚠️ MVP Limitations & Deferred
+
+✅ **Implemented:**
+- Review eligibility enforcement
+- Star ratings (1-5)
+- Optional comments
+- Automatic rating calculation
+- Public review visibility
+- Immutable records
+
+⏳ **Phase 2 (Deferred):**
+- Review moderation/flagging
+- Response from providers
+- Review filtering/sorting
+- Review search
+- Analytics/trends
+- Review photos/videos
+
+---
+
+## 🚀 Integration Points
+
+**Reviews linked to:**
+- Bookings (via `booking_id`)
+- Users (who left review)
+- Providers (who received review)
+
+**Triggered on:**
+- Booking marked completed → Can now review
+- New review submitted → Provider rating updated
 
 ---
 
@@ -430,4 +434,4 @@ Shows count of each rating (1-5 stars):
 **Platform:** Android (React Native / Expo)  
 **Date:** April 10, 2026  
 
-✅ **Reviews & ratings system complete and production-ready**
+✅ **Reviews system complete and tamper-resistant**
