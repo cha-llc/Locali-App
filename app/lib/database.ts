@@ -8,7 +8,12 @@ export interface UserProfile {
   id: string;
   phone: string;
   role: 'user' | 'provider' | 'admin';
+  first_name: string | null;
+  last_name: string | null;
   neighborhood_id: string | null;
+  verification_status: 'unverified' | 'pending' | 'approved' | 'rejected';
+  verification_document_path: string | null;
+  onboarding_completed: boolean;
   is_verified: boolean;
   created_at: string;
   updated_at: string;

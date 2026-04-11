@@ -10,7 +10,12 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT auth.uid(),
   phone VARCHAR(20) UNIQUE NOT NULL,
   role VARCHAR(50) DEFAULT 'user' CHECK (role IN ('user', 'provider', 'admin')),
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
   neighborhood_id VARCHAR(255),
+  verification_status VARCHAR(50) DEFAULT 'unverified' CHECK (verification_status IN ('unverified', 'pending', 'approved', 'rejected')),
+  verification_document_path VARCHAR(500),
+  onboarding_completed BOOLEAN DEFAULT FALSE,
   is_verified BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
