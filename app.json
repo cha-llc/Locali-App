@@ -2,7 +2,7 @@
   "expo": {
     "name": "Locali",
     "slug": "locali-mvp",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -23,8 +23,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#124734"
       },
-      "package": "com.chaholdingsltd.locali",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.chaholdingsltd.locali"
     },
     "web": {
       "favicon": "./assets/favicon.png"
