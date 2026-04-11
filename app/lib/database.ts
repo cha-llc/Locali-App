@@ -214,6 +214,69 @@ export async function getProviderBookings(providerId: string): Promise<Booking[]
   return data || [];
 }
 
+export async function createBooking(
+  userId: string,
+  booking: Omit<Booking, 'id' | 'created_at' | 'updated_at'>
+): Promise<Booking | null> {
+  try {
+    // Validate required fields
+    if (!booking.user_id || !booking.provider_id || !booking.service_id) {
+      throw new Error('Missing required booking fields');
+    }
+
+    // Check for duplicate bookings (same provider + date + time)
+    const { data: existingBookings, error: checkError } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('provider_id', booking.provider_id)
+      .eq('booking_date', booking.booking_date)
+      .eq('booking_time', booking.booking_time)
+      .eq('status', 'confirmed');
+
+    if (checkError) throw checkError;
+
+    if (existingBookings && existingBookings.length > 0) {
+      throw new Error(
+        'This time slot is no longer available. Please choose another.'
+      );
+    }
+
+    // Create booking
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([booking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    console.log('Booking created successfully:', data.id);
+    return data;
+  } catch (err) {
+    console.error('Error creating booking:', err);
+    throw err;
+  }
+}
+
+export async function updateBookingStatus(
+  bookingId: string,
+  status: Booking['status']
+): Promise<Booking | null> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', bookingId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating booking:', error);
+    return null;
+  }
+
+  return data;
+}
+
 // ============================================================================
 // REVIEWS
 // ============================================================================
