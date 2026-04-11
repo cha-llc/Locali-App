@@ -1,0 +1,263 @@
+================================================================================
+CARD #21 — INTERNAL TEST GROUP DEPLOYMENT + STRUCTURED FEEDBACK SYSTEM
+SUMMARY & STATUS REPORT
+================================================================================
+
+DATE: April 10, 2026
+AUTHORITY: CJ H. Adisa (C.H.A. LLC)
+CARD: #21
+STATUS: Documentation Phase Complete ✅ | Manual Setup Phase Ready ✅
+
+================================================================================
+
+WHAT WAS BUILT (Documentation Phase)
+
+7 comprehensive files created in /locali-mvp/beta/:
+
+1. README.md — Directory overview and guide (290 lines)
+2. TESTER_PLAYBOOK.md — Tester instructions (1,000+ words)
+3. FEEDBACK_FORM_SETUP.md — Google Form specifications (400+ words)
+4. TRELLO_BOARD_SETUP.md — Board structure and automation (500+ words)
+5. SETUP_INSTRUCTIONS.md — Step-by-step manual setup guide (400+ words)
+6. TRELLO_BUTLER_RULES.json — Automation rules reference (JSON)
+7. CARD_21_COMPLETION_CHECKLIST.md — 50+ item checklist (1,500+ words)
+
+Total: ~5,000 words of detailed specification and instruction documentation
+
+================================================================================
+
+GIT COMMITS (3 Total)
+
+Commit 1 (cc9d475): Initial tester playbook + form + board specs
+  ✅ TESTER_PLAYBOOK.md
+  ✅ FEEDBACK_FORM_SETUP.md
+  ✅ TRELLO_BOARD_SETUP.md
+
+Commit 2 (c21df96): Setup instructions + Butler rules + completion checklist
+  ✅ SETUP_INSTRUCTIONS.md
+  ✅ TRELLO_BUTLER_RULES.json
+  ✅ CARD_21_COMPLETION_CHECKLIST.md
+
+Commit 3 (7c07ca1): Directory guide
+  ✅ README.md
+
+All pushed to GitHub: https://github.com/cha-llc/Locali-App/tree/main/beta
+
+================================================================================
+
+WHAT THE DOCUMENTATION SPECIFIES
+
+Google Form:
+- Name: "Locali MVP Beta — Bug Report"
+- 10 required fields (Platform, Device, Version, Type, Steps, Expected, Actual, Screenshot, Name, Email)
+- Auto-collects email addresses
+- Shows progress bar
+- Sends confirmation on submit
+
+Trello Board:
+- Name: "Locali — Beta Bugs"
+- 5 workflow lists: New → Reviewing → In Progress → Ready for Verification → Done
+- 12 color-coded labels (severity + priority)
+- 8 Butler automation rules (auto-label, auto-escalate, auto-move)
+
+Zapier Automation:
+- Trigger: New Google Form response
+- Action: Auto-create Trello card
+- Mapping: All form fields → card description
+- Label automation: Severity-based labeling
+- Test: Submit bug to form, card appears in Trello within 5 minutes
+
+TestFlight & Google Play:
+- Minimum 5 testers per platform
+- Internal testing groups
+- Tester playbook link shared
+- Form link shared
+
+Demo Video:
+- 2-3 minutes end-to-end
+- Shows install → onboarding → home → booking → feedback form
+- Shows form submission → Trello card creation
+- Narration: "Feedback automatically flows into bug tracking"
+
+================================================================================
+
+WHAT REQUIRES MANUAL CJ EXECUTION (Phase 2)
+
+Phase 1: Create Google Form (15 min)
+  → Go to forms.google.com
+  → Create form with 10 fields (specs in FEEDBACK_FORM_SETUP.md)
+  → Enable email collection + progress bar
+  → Test submission
+
+Phase 2: Create Trello Board (15 min)
+  → Go to trello.com
+  → Create board "Locali — Beta Bugs"
+  → Create 5 lists (New, Reviewing, In Progress, Ready for Verification, Done)
+  → Create 12 labels (colors in TRELLO_BOARD_SETUP.md)
+
+Phase 3: Set Up Zapier (25 min)
+  → Go to zapier.com
+  → Create Zap: Google Forms → Trello
+  → Map all fields (mapping spec in SETUP_INSTRUCTIONS.md)
+  → Turn on Zap
+  → Test: Submit bug to form, verify card appears
+
+Phase 4: Configure Butler Rules (20 min)
+  → Go to Trello board → Butler
+  → Create 8 rules (specs in TRELLO_BUTLER_RULES.json)
+  → Test auto-labeling by severity
+
+Phase 5: Invite Testers (10 min)
+  → TestFlight: Add 5+ testers, send invitations
+  → Google Play: Add 5+ testers, send invitations
+  → Share playbook link: github.com/cha-llc/Locali-App/blob/main/beta/TESTER_PLAYBOOK.md
+  → Share form link: [Your Google Form URL]
+
+Phase 6: Record Demo Video (18 min)
+  → Record 2-3 minute video (requirements in SETUP_INSTRUCTIONS.md)
+  → Show: Install → Onboarding → Booking → Form Submission → Trello Card Creation
+  → Upload to YouTube (unlisted) or Google Drive
+
+Phase 7: Collect Screenshots (10 min)
+  → TestFlight internal testers page
+  → Google Play internal testing page
+  → Google Form (all 10 fields)
+  → Google Form responses (test submission)
+  → Trello board (5 lists, 12 labels)
+  → Trello card example
+  → Zapier Zap configuration
+  → Zapier test run
+
+TOTAL EXECUTION TIME: ~2-3 hours (mostly waiting for Zapier to sync)
+
+================================================================================
+
+COMPLETION GATE (Card #21 NOT DONE Until ALL 8 Exist)
+
+1. ✅ Tester Playbook (GitHub link)
+2. ⏳ Google Form (link + live responses)
+3. ⏳ Trello board (5 lists, 12 labels, 8 Butler rules)
+4. ⏳ TestFlight invitations (5+ testers)
+5. ⏳ Google Play invitations (5+ testers)
+6. ⏳ Zapier Zap (tested, working)
+7. ⏳ Demo video (2-3 minutes, end-to-end)
+8. ⏳ Screenshots (8 items)
+
+================================================================================
+
+KEY DECISIONS (LOCKED)
+
+✅ Single feedback source: Google Form only (no DMs, Slack, email noise)
+✅ Single bug board: Trello (one view of truth)
+✅ Automation: Zapier + Butler (no manual card creation)
+✅ Testing platforms: TestFlight (iOS) + Google Play Internal (Android)
+✅ Test cycle: 1 week (April 10-17, 2026)
+✅ Severity levels: 5-tier (Crash, Blocker, Major, Minor, UX)
+✅ Response time: P0 (24h), P1 (48h), P2+ (scheduled)
+✅ Tester minimum: 5 per platform
+
+================================================================================
+
+QUICK START GUIDE
+
+1. Read: SETUP_INSTRUCTIONS.md (5 min)
+2. Phase 1: Create Google Form (15 min)
+3. Phase 2: Create Trello board (15 min)
+4. Phase 3: Set up Zapier (25 min)
+5. Phase 4: Configure Butler (20 min)
+6. Phase 5: Invite testers (10 min)
+7. Phase 6: Record demo (18 min)
+8. Phase 7: Collect screenshots (10 min)
+9. Update CARD_21_COMPLETION_CHECKLIST.md with all links
+10. Final commit with proof
+11. Mark Card #21 COMPLETE
+
+================================================================================
+
+KEY LINKS
+
+GitHub Repo:        https://github.com/cha-llc/Locali-App
+Beta Directory:     https://github.com/cha-llc/Locali-App/tree/main/beta
+Tester Playbook:    https://github.com/cha-llc/Locali-App/blob/main/beta/TESTER_PLAYBOOK.md
+Setup Instructions: https://github.com/cha-llc/Locali-App/blob/main/beta/SETUP_INSTRUCTIONS.md
+Checklist:          https://github.com/cha-llc/Locali-App/blob/main/beta/CARD_21_COMPLETION_CHECKLIST.md
+
+================================================================================
+
+WHAT HAPPENS WHEN CJ COMPLETES MANUAL SETUP
+
+1. Testers receive invitations (TestFlight + Google Play)
+2. Testers receive playbook link + form link
+3. Testers download app and install via Expo/TestFlight/Play
+4. Testers complete onboarding and test 6 core flows
+5. Testers report bugs via form
+6. Zapier auto-creates Trello cards (< 5 min)
+7. Butler rules auto-label by severity
+8. Critical bugs notify CJ immediately
+9. Dev team picks up cards in morning standup
+10. Bugs get fixed, testers verify fix
+11. One-week beta cycle (Apr 10-17)
+12. v0.2 release with fixes (Apr 21)
+
+================================================================================
+
+OPERATIONAL NOTES
+
+For Testers:
+- This is a bug hunt, not a feature wishlist
+- Be specific and provide proof (screenshots/videos)
+- One bug = one form submission
+- Test in WiFi and cellular
+- Expected response time: P0 (24h), P1 (48h), P2+ (scheduled)
+
+For Dev Team:
+- Check board daily for new bugs
+- Triage by severity (Crash first, then Blocker, etc.)
+- Move cards: New → In Progress → Ready for Verification → Done
+- Link commits to Trello card IDs
+
+For CJ:
+- Review daily standups
+- Escalate critical bugs immediately
+- Close verified bugs
+- Prepare v0.2 release with fixes
+
+================================================================================
+
+STATUS SUMMARY
+
+✅ COMPLETE:
+  - All documentation written (7 files, ~5,000 words)
+  - All specifications locked and detailed
+  - All checklists created (50+ items)
+  - All setup instructions step-by-step
+  - All automation rules documented
+  - All files committed to GitHub (3 commits)
+  - Tester playbook ready to share
+
+⏳ PENDING (Manual CJ Execution):
+  - Create Google Form
+  - Create Trello board
+  - Set up Zapier automation
+  - Configure Butler rules
+  - Invite TestFlight + Google Play testers
+  - Record demo video
+  - Collect screenshots
+  - Final commit with proof
+
+✅ READY TO EXECUTE:
+  - All documentation is in place
+  - All instructions are step-by-step
+  - All checklists are detailed
+  - All links are documented
+  - CJ can execute immediately
+
+================================================================================
+
+Authority: CJ H. Adisa (C.H.A. LLC)
+Card: #21 — Internal Test Group Deployment + Structured Feedback System
+Status: Documentation Complete ✅ | Manual Setup Ready ✅ | Awaiting Execution ⏳
+Date Created: April 10, 2026
+Target Go-Live: April 10, 2026 (immediately after manual setup)
+
+================================================================================
