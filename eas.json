@@ -22,14 +22,14 @@
     "production": {
       "distribution": "store",
       "android": {
-        "gradleCommand": ":app:bundleRelease"
+        "gradleCommand": ":app:bundleRelease",
+        "withoutCredentials": true
       }
     }
   },
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "",
         "track": "production"
       }
     }
