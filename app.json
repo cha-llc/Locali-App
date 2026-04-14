@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Locali",
-    "slug": "locali-mvp",
+    "slug": "locali",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,46 +9,36 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#124734"
+      "backgroundColor": "#38A169"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTabletMode": false,
-      "bundleIdentifier": "com.chaholdingsltd.locali"
+      "supportsTabletMode": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#124734"
+        "backgroundColor": "#38A169"
       },
       "package": "com.chaholdingsltd.locali"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "minSdkVersion": 21,
-            "targetSdkVersion": 34
-          }
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow Locali to access your camera for ID verification"
-        }
-      ]
-    ],
     "extra": {
       "eas": {
-        "projectId": "locali-mvp"
+        "projectId": "locali-app-cj-adisa"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Locali to access your location."
+        }
+      ]
+    ]
   }
 }
