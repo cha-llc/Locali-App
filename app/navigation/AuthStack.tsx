@@ -8,7 +8,7 @@ const Stack = createNativeStackNavigator();
 
 export default function AuthStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animationEnabled: true }}>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SignUpPhone" component={SignUpPhoneScreen} />
       <Stack.Screen name="VerifyOTP" component={VerifyOTPScreen} />
     </Stack.Navigator>

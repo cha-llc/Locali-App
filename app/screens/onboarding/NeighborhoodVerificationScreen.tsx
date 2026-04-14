@@ -55,7 +55,7 @@ export default function NeighborhoodVerificationScreen({ navigation, route }: an
 
       setUploadedFile({
         name: file.name,
-        type: file.type || 'application/octet-stream',
+        type: (file as any).type || 'application/octet-stream',
         size: file.size || 0,
       });
       setError('');

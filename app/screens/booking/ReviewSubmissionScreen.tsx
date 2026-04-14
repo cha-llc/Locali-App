@@ -74,7 +74,7 @@ export default function ReviewSubmissionScreen({ route, navigation }: any) {
     setSubmitting(true);
 
     try {
-      await submitReview(user.id, bookingId, rating, comment);
+      await submitReview(bookingId, user.id, providerId, rating, comment);
 
       Alert.alert('Review Submitted!', 'Thank you for your feedback', [
         {

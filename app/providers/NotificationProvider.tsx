@@ -33,7 +33,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
 
-    return initNotifications().then((unsub) => unsub);
+    let cleanup: (() => void) | undefined;
+    initNotifications().then((unsub) => { cleanup = unsub; });
+    return () => { cleanup?.(); };
   }, [user?.id]);
 
   return <>{children}</>;

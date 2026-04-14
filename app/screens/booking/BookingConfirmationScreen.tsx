@@ -54,8 +54,6 @@ export default function BookingConfirmationScreen({ navigation, route }: any) {
         status: 'confirmed',
         price: service.base_price,
         location_address: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       if (!booking) {

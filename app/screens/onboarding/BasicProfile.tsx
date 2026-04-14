@@ -27,13 +27,7 @@ export default function BasicProfileScreen({ navigation }: any) {
 
     try {
       const result = await updateUserProfile(user.id, {
-        id: user.id,
-        phone: user.phone || '',
-        role: 'user',
         neighborhood_id: neighborhood.trim(),
-        is_verified: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       if (!result) {

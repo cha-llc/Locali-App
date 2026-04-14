@@ -80,7 +80,7 @@ export default function AvailabilitySelectionScreen({ navigation, route }: any) 
       <View style={styles.summaryBox}>
         <Text style={styles.summaryLabel}>Service</Text>
         <Text style={styles.summaryValue}>{service.name}</Text>
-        <Text style={styles.summaryLabel} style={{ marginTop: 12 }}>
+        <Text style={[styles.summaryLabel, { marginTop: 12 }]}>
           Provider
         </Text>
         <Text style={styles.summaryValue}>Available Provider</Text>

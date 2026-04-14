@@ -195,11 +195,11 @@ export default function AdminDashboardScreen({ navigation }: any) {
             {new Date(selectedProvider.created_at).toLocaleString()}
           </Text>
 
-          {selectedProvider.verification_document_path && (
+          {(selectedProvider as any).verification_document_path && (
             <>
               <Text style={styles.detailLabel}>Document</Text>
               <Text style={styles.documentPath}>
-                {selectedProvider.verification_document_path}
+                {(selectedProvider as any).verification_document_path}
               </Text>
             </>
           )}

@@ -265,30 +265,87 @@ export async function getProviderRatingDistribution(
 }
 
 /**
- * Subscribe to provider reviews in real-time
+ * Subscribe to provider reviews in real-time (Supabase JS v2)
  */
 export function subscribeToProviderReviews(
   providerId: string,
   onNewReview: (review: Review) => void
 ) {
-  try {
-    const subscription = supabase
-      .from(`reviews:provider_id=eq.${providerId}`)
-      .on('*', (payload) => {
-        if (payload.eventType === 'INSERT') {
-          const newReview = payload.new as Review;
-          if (!newReview.is_flagged) {
-            onNewReview(newReview);
-          }
+  const channel = supabase
+    .channel(`reviews-${providerId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'reviews',
+        filter: `provider_id=eq.${providerId}`,
+      },
+      (payload) => {
+        const newReview = payload.new as Review & { is_flagged?: boolean };
+        if (!newReview.is_flagged) {
+          onNewReview(newReview);
         }
-      })
-      .subscribe((status) => {
-        console.log(`Review subscription status for ${providerId}:`, status);
-      });
+      }
+    )
+    .subscribe();
 
-    return subscription;
-  } catch (err) {
-    console.error('Error subscribing to reviews:', err);
-    throw err;
-  }
+  return {
+    unsubscribe: () => supabase.removeChannel(channel),
+  };
+}
+
+/**
+ * Check if a user can review a booking (it must be completed and not yet reviewed)
+ */
+export async function canReviewBooking(
+  bookingId: string,
+  userId: string
+): Promise<{ canReview: boolean; reason: string }> {
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('status, user_id')
+    .eq('id', bookingId)
+    .single();
+
+  if (!booking) return { canReview: false, reason: 'Booking not found' };
+  if (booking.user_id !== userId) return { canReview: false, reason: 'Not your booking' };
+  if (booking.status !== 'completed') return { canReview: false, reason: 'Booking is not completed yet' };
+
+  const { data: existing } = await supabase
+    .from('reviews')
+    .select('id')
+    .eq('booking_id', bookingId)
+    .single();
+
+  if (existing) return { canReview: false, reason: 'You have already reviewed this booking' };
+
+  return { canReview: true, reason: '' };
+}
+
+/**
+ * Get a review by booking ID
+ */
+export async function getReviewByBooking(bookingId: string): Promise<Review | null> {
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('*')
+    .eq('booking_id', bookingId)
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
+/**
+ * Alias for getProviderAverageRating
+ */
+export async function getProviderRating(
+  providerId: string
+): Promise<{ rating: number; count: number }> {
+  const [rating, count] = await Promise.all([
+    getProviderAverageRating(providerId),
+    getProviderReviewCount(providerId),
+  ]);
+  return { rating, count };
 }

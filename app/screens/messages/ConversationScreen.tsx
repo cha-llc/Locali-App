@@ -206,7 +206,6 @@ export default function ConversationScreen({ route, navigation }: any) {
           onChangeText={setMessageText}
           multiline
           editable={!sending}
-          maxHeight={100}
         />
         <TouchableOpacity
           style={[
