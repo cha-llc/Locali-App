@@ -12,10 +12,8 @@ export default function OnboardingStack({ userId }: { userId: string }) {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animationEnabled: true,
-        cardStyle: { backgroundColor: '#fff' },
+        contentStyle: { backgroundColor: '#fff' },
       }}
-      initialParams={{ userId }}
     >
       <Stack.Screen
         name="BasicProfile"

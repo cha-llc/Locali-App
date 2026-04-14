@@ -12,16 +12,13 @@ export default function BookingStack() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animationEnabled: true,
-        cardStyle: { backgroundColor: '#fff' },
+        contentStyle: { backgroundColor: '#fff' },
       }}
     >
       <Stack.Screen
         name="ServiceSelection"
         component={ServiceSelectionScreen}
-        options={{
-          animationEnabled: false,
-        }}
+        options={{ animation: 'none' }}
       />
       <Stack.Screen
         name="AvailabilitySelection"

@@ -1,10 +1,3 @@
-import { Stack } from 'expo-router';
-import { AuthProvider } from '@/providers/AuthProvider';
-
-export default function RootLayout() {
-  return (
-    <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }} />
-    </AuthProvider>
-  );
-}
+// Entry point is index.js -> App.tsx -> RootNavigator (React Navigation)
+// This file is not used at runtime.
+export {};

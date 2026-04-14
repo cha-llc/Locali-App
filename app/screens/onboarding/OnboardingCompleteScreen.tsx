@@ -11,22 +11,26 @@ export default function OnboardingCompleteScreen({ navigation, route }: any) {
   const { userId } = route.params;
 
   useEffect(() => {
-    // Auto-navigate to home after 2 seconds
+    // Navigate to App stack after 2 seconds via the root navigator
     const timer = setTimeout(() => {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Tabs' }],
-      });
+      const parent = navigation.getParent();
+      if (parent) {
+        parent.reset({ index: 0, routes: [{ name: 'App' }] });
+      } else {
+        navigation.reset({ index: 0, routes: [{ name: 'App' }] });
+      }
     }, 2000);
 
     return () => clearTimeout(timer);
   }, [navigation]);
 
   const handleGoHome = () => {
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Tabs' }],
-    });
+    const parent = navigation.getParent();
+    if (parent) {
+      parent.reset({ index: 0, routes: [{ name: 'App' }] });
+    } else {
+      navigation.reset({ index: 0, routes: [{ name: 'App' }] });
+    }
   };
 
   return (

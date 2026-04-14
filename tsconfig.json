@@ -22,6 +22,6 @@
       "@types/*": ["app/types/*"]
     }
   },
-  "include": ["app", "index.js"],
+  "include": ["app", "index.js", "App.tsx"],
   "exclude": ["node_modules", "dist", "build"]
 }
